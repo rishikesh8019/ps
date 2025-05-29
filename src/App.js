@@ -25,7 +25,7 @@ function App() {
         setLoading(true);
 
         try {
-            const response = await axios.post('https://drug-design-99q9.onrender.com/predict/vit', { SMILES: smiles });
+            const response = await axios.post('https://drug-design-backend-qpt3.onrender.com/predict/vit', { SMILES: smiles });
             setResult(response.data);
         } catch (err) {
             setError(err.response?.data?.detail || 'An error occurred');
