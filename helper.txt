@@ -1,0 +1,202 @@
+-------------------------Add To Git---------------------------
+git init
+git add .
+git remote add origin <githublink>.git
+git commit -m "Initial commit"
+git push -u origin main
+
+
+====================How to pull from dockerhub and run ==============
+1. Pull Image
+docker pull redis
+
+2. Redis Container
+docker run --name my-redis -d redis
+
+3. Enter into Redis CLI
+docker exec -it my-redis redis-cli
+
+Run Test Commands :
+	SET name "Alice"
+	GET name
+	exit
+
+4. Stop Container
+docker stop my-redis
+
+5.Restart Container
+docker start my-redis
+
+6. Delete Container
+docker rm my-redis
+
+7. Delete Image
+docker rmi redis
+
+--------------Use a Dockerfile (Create Your OwnImage)----------------------
+
+mkdir Redis
+cd Redis
+
+-> create Dockerfile
+FROM redis:latest
+CMD ["redis-server"]
+
+Build Image
+docker build -t redisnew .
+
+Run Image
+docker run --name myredisnew -d redisnew
+
+Stop Container
+docker stop myredisnew
+
+
+---------------Push Image to Docker Hub------------------------------------
+docker login
+docker commit <container-id> username/redis1
+docker push username/redis1
+
+Delete :
+docker rm <container-id>
+docker rmi username/redis1
+
+docker logout
+
+--------Create Custom Image and Container (Basics)- if asked ---------
+mkdir myapp
+cd myapp
+
+Dockerfile:
+FROM nginx
+
+docker build -t myimage .
+docker run --name mycontainer -d myimage
+
+docker stop mycontainer
+docker rm mycontainer
+
+
+----------- Docker Compose -------------------------------------------
+mkdir compose-lab
+cd compose-lab
+
+
+docker-compose.yml:
+version: "3.9"
+
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo_db
+
+
+docker compose up -d
+http://localhost:8080
+
+
+---------------- Add Redis service ------------------------
+version: "3.9"
+
+services:
+  redis:
+    image: redis:alpine
+  web:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - redis
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo_db
+
+docker compose up -d
+docker compose ps
+
+========================= Run Flask App with Compose=============
+app.py :
+
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Hello from Flask + Docker!"
+
+app.run(host="0.0.0.0", port=5000)
+
+Dockerfile:
+
+FROM python:3.10-slim
+WORKDIR /app
+COPY app.py /app/
+RUN pip install flask
+CMD ["python", "app.py"]
+
+docker-compose.yml :
+
+version: "3.9"
+
+services:
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: demo
+      POSTGRES_PASSWORD: demo
+      POSTGRES_DB: demo_db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
+
+========================== Minikube ===========================
+
+minikube start --driver=docker
+kubectl create deployment nginx --image=nginx:alpine
+kubectl expose deployment nginx --type=NodePort --port=80 --target-port=80
+kubectl scale deployment nginx --replicas=4
+minikube get service nginx 
+
+http://localhost:8081
+
+Delete :
+kubectl delete deployment mynginx
+kubectl delete service mynginx
+
+-----------------------------------------------------------------
+
+
+kubectl create deployment mysql --image=mysql:8
+kubectl set env deployment/mysql MYSQL_ROOT_PASSWORD=root
+kubectl expose deployment mysql --port=3306
+kubectl get pods
+kubectl exec -it <pod-name> -- mysql -u root -proot
+
+
+
+docker compose up --build
+
+http://localhost:5000
+
